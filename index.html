@@ -193,6 +193,20 @@
         .prize-table td {
             background-color: #fff;
         }
+
+        /* スクラッチが一度しかできないことを確認するポップアップ */
+        #oncePopup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 20; /* 前面に表示するための設定 */
+        }
     </style>
 </head>
 <body>
@@ -242,7 +256,7 @@
         <tbody>
             <tr>
                 <td>店内お好きな商品１つ</td>
-                <td>5.00%</td>
+                <td>2.00%</td>
             </tr>
             <tr>
                 <td>500円クーポン</td>
@@ -262,7 +276,7 @@
             </tr>
             <tr>
                 <td>メダル125枚</td>
-                <td>29.00%</td>
+                <td>28.00%</td>
             </tr>
         </tbody>
     </table>
@@ -285,7 +299,7 @@
 
             // 結果一覧と確率設定
             const prizes = [
-                { prize: "店内お好きな商品１つ", weight: 5 },
+                { prize: "店内お好きな商品１つ", weight: 2 },
                 { prize: "500円クーポン", weight: 10 },
                 { prize: "300円クーポン", weight: 15 },
                 { prize: "メダル500枚", weight: 20 },
@@ -313,13 +327,26 @@
                 scratchResult.classList.remove("result-revealed");
             }
 
-            // すでに結果が保存されているか確認
-            if (localStorage.getItem('scratchResult')) {
-                scratchResult.textContent = localStorage.getItem('scratchResult');
-                scratchCover.style.pointerEvents = "none";
-                scratchCover.style.opacity = "0";
-                scratchResult.classList.add("result-revealed");
-                scratchMessage.style.display = "none"; // メッセージを非表示
+            // スクラッチ結果が保存されているか確認
+            const savedData = localStorage.getItem('scratchResult');
+            const savedDate = localStorage.getItem('scratchDate');
+
+            if (savedData && savedDate) {
+                const currentTime = new Date().getTime();
+                const elapsedTime = currentTime - savedDate;
+
+                // 24時間以上経過していれば初期化
+                if (elapsedTime > 24 * 60 * 60 * 1000) {
+                    localStorage.removeItem('scratchResult');
+                    localStorage.removeItem('scratchDate');
+                    showResult();
+                } else {
+                    scratchResult.textContent = savedData;
+                    scratchCover.style.pointerEvents = "none";
+                    scratchCover.style.opacity = "0";
+                    scratchResult.classList.add("result-revealed");
+                    scratchMessage.style.display = "none"; // メッセージを非表示
+                }
             } else {
                 // 新しい結果を設定
                 showResult();
@@ -339,6 +366,7 @@
                 scratchCover.style.pointerEvents = "none"; // スクラッチ後にクリック不可にする
                 scratchResult.classList.add("result-revealed");
                 localStorage.setItem('scratchResult', scratchResult.textContent); // 結果を保存
+                localStorage.setItem('scratchDate', new Date().getTime()); // 現在の日時を保存
                 isScratched = true;
                 oncePopup.style.display = "none"; // ポップアップ非表示
                 scratchMessage.style.display = "none"; // 「タップしてめくってください」を非表示にする
@@ -365,6 +393,7 @@
 
             confirmButton.addEventListener("click", () => {
                 localStorage.removeItem('scratchResult');
+                localStorage.removeItem('scratchDate');
                 location.reload();
             });
 
