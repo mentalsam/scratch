@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -57,7 +58,7 @@
             );
             cursor: pointer;
             z-index: 10;
-            pointer-events: auto; /* 初期状態でクリック可能に設定 */
+            pointer-events: auto;
         }
 
         .scratch-result {
@@ -96,7 +97,7 @@
             border-radius: 5px;
             border: 1px solid #ccc;
             display: none;
-            width: 500px;  /* ここで横幅を広げます */
+            width: 500px;
         }
 
         .password-label {
@@ -105,7 +106,6 @@
             margin-top: 10px;
         }
 
-        /* 最終確認ポップアップのスタイル */
         .popup {
             position: fixed;
             top: 0;
@@ -116,6 +116,7 @@
             display: none;
             justify-content: center;
             align-items: center;
+            z-index: 20;
         }
 
         .popup-content {
@@ -153,7 +154,6 @@
             background-color: #95a5a6;
         }
 
-        /* 新しいメッセージのスタイル */
         .scratch-message {
             position: absolute;
             font-size: 1.2rem;
@@ -164,12 +164,6 @@
             text-align: center;
         }
 
-        .confirmation-message {
-            font-size: 1.2rem;
-            margin: 20px;
-        }
-
-        /* 賞品詳細テーブル */
         .prize-table {
             margin-top: 40px;
             width: 80%;
@@ -194,18 +188,119 @@
             background-color: #fff;
         }
 
-        /* スクラッチが一度しかできないことを確認するポップアップ */
-        #oncePopup {
+        .prize-popup {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: none;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 20; /* 前面に表示するための設定 */
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .prize-content {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            width: 500px;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .prize-header {
+            font-size: 2rem;
+            color: #f39c12;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .prize-message {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin: 30px 0;
+            line-height: 1.6;
+        }
+
+        .prize-value {
+            font-size: 2.2rem;
+            color: #e67e22;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(243, 156, 18, 0.1);
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        .close-button {
+            padding: 15px 40px;
+            background-color: #f39c12;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #fff;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+        }
+
+        .close-button:hover {
+            background-color: #e67e22;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+        }
+
+        .staff-message {
+            font-size: 1.3rem;
+            color: #e74c3c;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .confirmation-buttons {
+            margin-top: 20px;
+        }
+
+        .confirmation-buttons button {
+            margin: 0 10px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .yes-button {
+            background-color: #2ecc71;
+        }
+
+        .no-button {
+            background-color: #e74c3c;
         }
     </style>
 </head>
@@ -223,7 +318,6 @@
     <input type="password" id="passwordInput" class="password-input" placeholder="お店の人に店番を入力してもらってください。" />
     <label for="passwordInput" id="passwordLabel" class="password-label">パスワードを入力</label>
 
-    <!-- 最終確認ポップアップ -->
     <div class="popup" id="confirmationPopup">
         <div class="popup-content">
             <p>スクラッチが初期化されますが、本当によろしいですか？</p>
@@ -234,7 +328,6 @@
         </div>
     </div>
 
-    <!-- スクラッチが一度しかできないことを確認するポップアップ -->
     <div class="popup" id="oncePopup">
         <div class="popup-content">
             <p>一度しかめくれませんがよろしいですか？</p>
@@ -245,7 +338,6 @@
         </div>
     </div>
 
-    <!-- 賞品詳細テーブル -->
     <table class="prize-table">
         <thead>
             <tr>
@@ -297,17 +389,15 @@
             const cancelOnceButton = document.getElementById("cancelOnceButton");
             const scratchMessage = document.getElementById("scratchMessage");
 
-            // 結果一覧と確率設定
             const prizes = [
                 { prize: "店内お好きな商品１つ", weight: 2 },
                 { prize: "500円クーポン", weight: 10 },
                 { prize: "300円クーポン", weight: 15 },
                 { prize: "メダル500枚", weight: 20 },
                 { prize: "メダル250枚", weight: 25 },
-                { prize: "メダル125枚", weight: 29 }
+                { prize: "メダル125枚", weight: 28 }
             ];
 
-            // 確率に基づくランダム選択
             function getRandomPrize() {
                 const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
                 let randomNum = Math.random() * totalWeight;
@@ -319,15 +409,13 @@
                 }
             }
 
-            // 結果を表示する
             function showResult() {
                 scratchResult.textContent = getRandomPrize();
                 scratchCover.style.opacity = "1";
-                scratchCover.style.pointerEvents = "auto"; // 結果が表示されていない場合、スクラッチ可能にする
+                scratchCover.style.pointerEvents = "auto";
                 scratchResult.classList.remove("result-revealed");
             }
 
-            // スクラッチ結果が保存されているか確認
             const savedData = localStorage.getItem('scratchResult');
             const savedDate = localStorage.getItem('scratchDate');
 
@@ -335,7 +423,6 @@
                 const currentTime = new Date().getTime();
                 const elapsedTime = currentTime - savedDate;
 
-                // 24時間以上経過していれば初期化
                 if (elapsedTime > 24 * 60 * 60 * 1000) {
                     localStorage.removeItem('scratchResult');
                     localStorage.removeItem('scratchDate');
@@ -345,38 +432,98 @@
                     scratchCover.style.pointerEvents = "none";
                     scratchCover.style.opacity = "0";
                     scratchResult.classList.add("result-revealed");
-                    scratchMessage.style.display = "none"; // メッセージを非表示
+                    scratchMessage.style.display = "none";
                 }
             } else {
-                // 新しい結果を設定
                 showResult();
             }
 
-            // スクラッチイベント
             let isScratched = false;
             scratchCover.addEventListener("click", () => {
                 if (!isScratched) {
-                    oncePopup.style.display = "flex";  // 一度だけの確認ポップアップ表示
+                    oncePopup.style.display = "flex";
                 }
             });
 
-            // 一度だけスクラッチができることを確認
             confirmOnceButton.addEventListener("click", () => {
                 scratchCover.style.opacity = "0";
-                scratchCover.style.pointerEvents = "none"; // スクラッチ後にクリック不可にする
+                scratchCover.style.pointerEvents = "none";
                 scratchResult.classList.add("result-revealed");
-                localStorage.setItem('scratchResult', scratchResult.textContent); // 結果を保存
-                localStorage.setItem('scratchDate', new Date().getTime()); // 現在の日時を保存
+                localStorage.setItem('scratchResult', scratchResult.textContent);
+                localStorage.setItem('scratchDate', new Date().getTime());
                 isScratched = true;
-                oncePopup.style.display = "none"; // ポップアップ非表示
-                scratchMessage.style.display = "none"; // 「タップしてめくってください」を非表示にする
+                oncePopup.style.display = "none";
+                scratchMessage.style.display = "none";
+                
+                const prizePopup = document.createElement("div");
+                prizePopup.className = "prize-popup";
+
+                const prizeContent = document.createElement("div");
+                prizeContent.className = "prize-content";
+
+                const header = document.createElement("div");
+                header.className = "prize-header";
+                header.textContent = "🎉 おめでとうございます！ 🎉";
+
+                const prizeMessage = document.createElement("div");
+                prizeMessage.className = "prize-message";
+                prizeMessage.textContent = "あなたの賞品は";
+
+                const prizeValue = document.createElement("div");
+                prizeValue.className = "prize-value";
+                prizeValue.textContent = `${scratchResult.textContent}`;
+
+                const staffMessage = document.createElement("div");
+                staffMessage.className = "staff-message";
+                staffMessage.textContent = "※この画面をスタッフにお見せください";
+
+                const closeButton = document.createElement("button");
+                closeButton.className = "close-button";
+                closeButton.textContent = "閉じる";
+                closeButton.addEventListener("click", () => {
+                    const confirmationButtons = document.createElement("div");
+                    confirmationButtons.className = "confirmation-buttons";
+                    
+                    const confirmationMessage = document.createElement("div");
+                    confirmationMessage.className = "prize-message";
+                    confirmationMessage.textContent = "賞品は受け取りましたか？";
+                    
+                    const yesButton = document.createElement("button");
+                    yesButton.className = "yes-button";
+                    yesButton.textContent = "はい";
+                    yesButton.addEventListener("click", () => {
+                        window.close();
+                    });
+                    
+                    const noButton = document.createElement("button");
+                    noButton.className = "no-button";
+                    noButton.textContent = "いいえ";
+                    noButton.addEventListener("click", () => {
+                        confirmationButtons.remove();
+                        confirmationMessage.remove();
+                    });
+                    
+                    confirmationButtons.appendChild(yesButton);
+                    confirmationButtons.appendChild(noButton);
+                    
+                    closeButton.style.display = "none";
+                    prizeContent.appendChild(confirmationMessage);
+                    prizeContent.appendChild(confirmationButtons);
+                });
+
+                prizeContent.appendChild(header);
+                prizeContent.appendChild(prizeMessage);
+                prizeContent.appendChild(prizeValue);
+                prizeContent.appendChild(staffMessage);
+                prizeContent.appendChild(closeButton);
+                prizePopup.appendChild(prizeContent);
+                document.body.appendChild(prizePopup);
             });
 
             cancelOnceButton.addEventListener("click", () => {
-                oncePopup.style.display = "none"; // ポップアップ非表示
+                oncePopup.style.display = "none";
             });
 
-            // クリアボタンのイベント
             clearButton.addEventListener("click", () => {
                 passwordInput.value = "";
                 passwordLabel.style.display = "block";
@@ -384,7 +531,6 @@
                 clearButton.style.display = "none";
             });
 
-            // パスワードの入力を確認
             passwordInput.addEventListener("input", () => {
                 if (passwordInput.value === "506") {
                     confirmationPopup.style.display = "flex";
